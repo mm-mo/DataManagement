@@ -1,0 +1,407 @@
+import pandas as pd
+import numpy as np
+from pandas import DataFrame
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+#import glob
+import matplotlib.pyplot as plt
+from sklearn import decomposition
+from sklearn.cluster import KMeans
+#from random import randint
+import numpy as np
+import collections, numpy
+from sklearn.covariance import EllipticEnvelope
+#import datetime
+
+########Deposit UpdateFiles
+data = pd.read_csv(r'C:\Users\polar\Data Management\Project\Deposits.csv',delimiter=",")
+
+data2 = data.dropna()
+data2['DepositNumber'] = data2['DepositNumber'].apply(lambda x: int(x) if x == x else "")
+Deposit_Num = []
+Deposit_Num = pd.to_numeric(data2['DEPOSITNUM'], downcast='integer').unique()
+Deposit_Attr = list(data2.columns.values) 
+Deposit_Attr.remove('TIMESTAMP')
+
+#######Cell.tsv
+i = 0
+CellFile = open(r'C:\Users\polar\Data Management\Project\Cell.tsv', 'w+')
+while i < len(Deposit_Attr):
+    for x in np.nditer(Deposit_Num):
+            CellFile.write("%s%i%s%s\t%s%s\t%s%s\n" % ('Deposit_',x,'_',Deposit_Attr[i],'Deposit_',x,'Deposit_',Deposit_Attr[i]))
+    i += 1
+    
+CellFile.close()   
+
+#######Probablistic.tsv
+i = 0
+ProbFile = open(r'C:\Users\polar\Data Management\Project\Probablistic.tsv', 'w+')
+while i < len(Deposit_Attr):
+    ProbFile.write("%s%s\n" % ('Deposit_',Deposit_Attr[i]))
+    i += 1
+ 
+ProbFile.close()   
+
+#######Time.tsv
+Time_Stamp = []
+Time_Stamp = data2['TIMESTAMP'].unique()
+i = 0
+TimeFile = open(r'C:\Users\polar\Data Management\Project\Time.tsv', 'w+')
+while i < len(Time_Stamp):
+    TimeFile.write("%s\n" % (Time_Stamp[i]))
+    i += 1
+
+TimeFile.close()   
+
+#######Update.tsv   
+#data3 = data2.groupby('DEPOSITNUM').count() 
+#updated_values = data3.reset_index().query('TIMESTAMP > 1')
+#Updated_Deposit_Num = pd.to_numeric(updated_values['DEPOSITNUM'], downcast='integer').unique()   
+data3 = pd.read_csv(r'C:\Users\polar\Data Management\Project\DepositUpd.csv' ,delimiter=",") 
+i = 0
+UpdatedFile = open(r'C:\Users\polar\Data Management\Project\Updated.tsv', 'w+')
+#while i < len(Deposit_Attr):
+#for x in np.nditer(Updated_Deposit_Num):
+for index, row in data3.iterrows():
+#        UpdatedFile.write("%s%i%s%s\t%s%i\t%s%s\n" % ('Deposit_',x,'_',Deposit_Attr[i],'Deposit_',x,'Deposit_',Deposit_Attr[i]))
+         UpdatedFile.write("%s%i%s%s\t%s\n" % ('Deposit_',row['DEPOSITNUM'],'_', row['UODVALUE'], row['TIMESTAMP']))
+i += 1
+
+UpdatedFile.close()   
+
+    
+#######Lastupd.tsv
+#data3 = data2.groupby('DEPOSITNUM').count() 
+#updated_values = data3.reset_index().query('TIMESTAMP > 1')
+#Updated_Deposit_Num = []
+#Updated_Deposit_Num = pd.to_numeric(updated_values['DEPOSITNUM'], downcast='integer').unique()   
+LastUpdates = data3.sort_values('TIMESTAMP').groupby('DEPOSITNUM').tail(1)
+i = 0
+LastUpdatedFile = open(r'C:\Users\polar\Data Management\Project\Lastupd.tsv', 'w+')
+#while i < len(Deposit_Attr):
+for index, row in data3.iterrows():
+        LastUpdatedFile.write("%s%i%s%s\t%s\n" % ('Deposit_',row['DEPOSITNUM'],'_', row['UODVALUE'], row['TIMESTAMP']))
+i += 1
+
+LastUpdatedFile.close()   
+
+
+#######UpdateValue.tsv    
+i = 0
+UpdatedValueFile = open(r'C:\Users\polar\Data Management\Project\UpdatedValue.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in data3.iterrows():
+    UpdatedValueFile.write("%s%i%s%s\t%s\t%s\n" % ('Deposit_',row['DEPOSITNUM'],'_', row['UODVALUE'], row['TIMESTAMP'], row['NEWVAL']))
+i += 1
+
+UpdatedValueFile.close()   
+
+    
+#######Lastupd.tsv   
+LastUpdates = data3.sort_values('TIMESTAMP').groupby('DEPOSITNUM').tail(1)
+
+i = 0
+LastupdatedValueFile = open(r'C:\Users\polar\Data Management\Project\LastupdValue.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in LastUpdates.iterrows():
+#    LastupdatedValueFile.write("%s%i%s%s\t%s\t%s\n" % ('oprParaCooling_',row['Unit.Num'],'_',Sensor_Attr[i], row['Timestamp'], row['Air.Temperature.In'])
+    LastupdatedValueFile.write("%s%i%s%s\t%s\t%s\n" % ('Deposit_',row['DEPOSITNUM'],'_', row['UODVALUE'], row['TIMESTAMP'], row['NEWVAL']))
+i += 1
+
+LastupdatedValueFile.close()  
+
+
+
+
+
+
+########Sensor UpdateFiles
+data = pd.read_csv("C:\Users\polar\Data Management\Project\Sensor.csv",delimiter=",")
+
+data2 = data.dropna()
+#data2['Unit.Num'] = data2['Unit.Num'].apply(lambda x: int(x) if x == x else "")
+Unit_Num = []
+Unit_Num = pd.to_numeric(data2['Unit.Num'], downcast='integer').unique()
+#Sensor_Attr = data['Unit.Num'].unique()
+Sensor_Attr = list(data2.columns.values)
+Sensor_Attr.remove('Timestamp')
+
+
+
+#######Cell.tsv
+i = 0
+CellFile = open('C:\Users\polar\Data Management\Project\Cell.tsv', 'w+')
+while i < len(Sensor_Attr):
+    for x in np.nditer(Unit_Num):
+            #print('oprParaCooling_',x,'_',Sensor_Attr[i],sep='')
+            CellFile.write("%s%i%s%s\t%s%i\t%s%s\n" % ('oprParaCooling_',x,'_',Sensor_Attr[i],'oprParaCooling_',x,'oprParaCooling_',Sensor_Attr[i]))
+    i += 1
+
+CellFile.close()   
+
+#######Probablistic.tsv
+i = 0
+ProbFile = open('C:\Users\polar\Data Management\Project\Probablistic.tsv', 'w+')
+while i < len(Sensor_Attr):
+    ProbFile.write("%s%s\n" % ('oprParaCooling_',Sensor_Attr[i]))
+    i += 1
+
+ProbFile.close()
+    
+#######Time.tsv
+Time_Stamp = []
+Time_Stamp = data2['Timestamp'].unique()
+#str_time = datetime.strptime(Time_Stamp, "%m/%j/%y %H:%M")
+
+i = 0
+TimeFile = open('C:\Users\polar\Data Management\Project\Time.tsv', 'w+')
+while i < len(Time_Stamp):
+    TimeFile.write("%s\n" % (Time_Stamp[i]))
+    i += 1
+
+TimeFile.close()   
+
+###########################UpdAirTmpIn
+#######Update.tsv   
+data3 = pd.read_csv("C:\Users\polar\Data Management\Project\UpdAirTmpIn.csv",delimiter=",")
+data4 = DataFrame.drop_duplicates(data3)
+
+i = 0
+UpdatedFile = open('C:\Users\polar\Data Management\Project\Updated.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in data4.iterrows():
+#        UpdatedFile.write("%s%i%s%s\t%s\n" % ('oprParaCooling_',row['Unit.Num'],'_',Sensor_Attr[i], row['Timestamp']))
+    UpdatedFile.write("%s%i%s%s\t%i\n" % ('oprParaCooling_',row['Unit.Num'],'_', row['UODVALUE'], row['Timestamp']))
+i += 1
+
+UpdatedFile.close()   
+
+    
+#######Lastupd.tsv 
+LastUpdates = data4.sort_values('Timestamp').groupby('Unit.Num').tail(1)
+#Updated_Deposits = []
+#Updated_Deposits = Updates[['Unit.Num', 'Timestamp', 'Expire_Date']]
+
+i = 0
+LastupdatedFile = open('C:\Users\polar\Data Management\Project\Lastupd.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in LastUpdates.iterrows():
+#        LastupdatedFile.write("%s%i%s%s\t%s\n" % ('oprParaCooling_',row['Unit.Num'],'_',Sensor_Attr[i], row['Timestamp']))
+    LastupdatedFile.write("%s%i%s%s\t%i\n" % ('oprParaCooling_',row['Unit.Num'],'_', row['UODVALUE'], row['Timestamp']))
+i += 1
+
+LastupdatedFile.close()   
+
+#######UpdateValue.tsv   
+#data3 = pd.read_csv("C:\Users\polar\Data Management\Project\Upd.csv",delimiter=",")
+ 
+i = 0
+UpdatedValueFile = open('C:\Users\polar\Data Management\Project\UpdatedValue.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in data4.iterrows():
+    #UpdatedValueFile.write("%s%i%s%s\t%s\t%s\n" % ('oprParaCooling_',row['Unit.Num'],'_',Sensor_Attr[i], row['Timestamp'], row['Air.Temperature.In']))
+    UpdatedValueFile.write("%s%i%s%s\t%i\t%i\n" % ('oprParaCooling_',row['Unit.Num'],'_', row['UODVALUE'], row['Timestamp'], row['NEWVAL']))
+i += 1
+
+UpdatedValueFile.close()   
+
+    
+#######Lastupd.tsv   
+LastUpdates = data4.sort_values('Timestamp').groupby('Unit.Num').tail(1)
+
+i = 0
+LastupdatedValueFile = open('C:\Users\polar\Data Management\Project\LastupdValue.tsv', 'w+')
+#while i < len(Sensor_Attr):
+for index, row in LastUpdates.iterrows():
+#    LastupdatedValueFile.write("%s%i%s%s\t%s\t%s\n" % ('oprParaCooling_',row['Unit.Num'],'_',Sensor_Attr[i], row['Timestamp'], row['Air.Temperature.In'])
+    LastupdatedValueFile.write("%s%i%s%s\t%i\t%i\n" % ('oprParaCooling_',row['Unit.Num'],'_', row['UODVALUE'], row['Timestamp'], row['NEWVAL']))
+i += 1
+
+LastupdatedValueFile.close()   
+
+
+###########
+
+df = pd.read_csv(r'C:\Users\polar\Data Management\Project\Sensor.csv' ,delimiter=",")
+
+print('processed')
+#df=pd.concat([df,df1,df2,df3,df4,df5], axis=0)
+df.dropna()
+print(df.head())
+
+Sensor_Attr = list(df.columns.values)
+Sensor_Attr.remove('Timestamp')
+
+
+scale = StandardScaler()
+#df[['Unit.Num',
+# 'Air.Temperature.In',
+# 'Air.Temperature.Out',
+# 'Water.In-Temperature.Value',
+# 'Water.Out-Temperature.Value',
+# 'Air.Fans.Rpm',
+# 'Water.Flowrate.Value',
+# 'Water.Control-Valve.ActualValue',
+# 'Water.CoolingCapacity.Value']] = scale.fit_transform(df[['Unit.Num',
+# 'Air.Temperature.In',
+# 'Air.Temperature.Out',
+# 'Water.In-Temperature.Value',
+# 'Water.Out-Temperature.Value',
+# 'Air.Fans.Rpm',
+# 'Water.Flowrate.Value',
+# 'Water.Control-Valve.ActualValue',
+# 'Water.CoolingCapacity.Value']].as_matrix())
+#my_df = df.dropna()
+#
+#
+#
+#df_sliced=df[:10000]
+#
+#print('PCA start')
+#pca = decomposition.PCA(n_components=2) #n_components are the components you want to conserve
+#pca.fit(df_sliced)
+#principalComponents= pca.transform(df_sliced)
+#principalDf = pd.DataFrame(data = principalComponents, columns = ['PCA_1', 'PCA_2'])
+#print('PCA done')
+#
+#
+#
+#pca_1=principalDf['PCA_1'].tolist()
+#pca_2=principalDf['PCA_2'].tolist()
+#
+#
+#
+#outlier_frac = 0.01
+#ell = EllipticEnvelope(contamination=outlier_frac)
+#ell.fit(principalDf)
+#pred = ell.predict(principalDf) #outlier predicted as -1
+#
+#print(list(pred)[0])
+
+########Change the Attr.
+cluster_df = df[['Unit.Num', 'Timestamp', 'Water.In-Temperature.Value', 'Water.Out-Temperature.Value']]
+kmeans = KMeans(n_clusters=3)
+#kmeans.fit(principalDf)
+kmeans.fit(cluster_df)
+
+
+#y_kmeans = kmeans.predict(principalDf)
+y_kmeans = kmeans.predict(cluster_df)
+
+#This is for printing the lables
+collections.Counter(y_kmeans)
+
+#plt.scatter(principalDf['PCA_1'], principalDf['PCA_2'], c=y_kmeans, s=50, cmap='viridis')
+plt.scatter(cluster_df['Water.In-Temperature.Value'], cluster_df['Water.Out-Temperature.Value'], c=y_kmeans, s=50, cmap='viridis')
+
+centers = kmeans.cluster_centers_
+plt.scatter(centers[:, 0], centers[:, 1], c='black', s=20, alpha=0.5);
+
+
+######################################################################
+df['Lables'] = Series(y_kmeans, index=df.index)
+
+
+
+
+
+#TimeSeries
+plt.scatter(data2['Timestamp'],data2['Air.Temperature.In'], s=10, cmap='viridis')
+plt.scatter(data2['Timestamp'],data2['Water.Out-Temperature.Value'], s=10, cmap='viridis')
+
+
+######################### K-Medoids
+
+def assign_nearest(ids_of_mediods):
+    dists = dist(data[:,None,:], data[None,ids_of_mediods,:])
+    return np.argmin(dists, axis=1)
+
+
+def dist(xa, xb):
+    if EUCLIDEAN:
+        return np.sqrt(np.sum(np.square(xa-xb), axis=-1))
+    else:
+        return np.sum(np.abs(xa - xb), axis=-1)
+
+
+def find_medoids(assignments):
+    medoid_ids = np.full(k, -1, dtype=int)
+    subset = np.random.choice(n, batch_sz, replace=False)
+
+    for i in range(k):
+        indices = np.intersect1d(np.where(assignments==i)[0], subset)
+        distances = dist(data[indices, None, :], data[None, indices, :]).sum(axis=0)
+        medoid_ids[i] = indices[np.argmin(distances)]
+
+    return medoid_ids
+
+
+def kmeds(iterations=20):
+    print("Initializing to random medoids.")
+    ids_of_medoids = np.random.choice(n, k, replace=False)
+    class_assignments = assign_nearest(ids_of_medoids)
+
+    for i in range(iterations):
+        print("\tFinding new medoids.")
+        ids_of_medoids = find_medoids(class_assignments)
+        print("\tReassigning points.")
+        new_class_assignments = assign_nearest(ids_of_medoids)
+
+        diffs = np.mean(new_class_assignments != class_assignments)
+        class_assignments = new_class_assignments
+
+        print("iteration {:2d}: {:.2%} of points got reassigned."
+              "".format(i, diffs))
+        if diffs <= 0.01:
+            break
+
+    return class_assignments, ids_of_medoids
+
+
+######################### Generate Fake Data
+print("Initializing Data.")
+d = 10
+k = 6
+n = k * 528
+batch_sz = 3165
+#x = np.random.normal(size=(n, d))
+data = pd.read_csv(r'C:\Users\polar\Data Management\Project\Sensor.csv' ,delimiter=",")
+data = data.values
+
+
+EUCLIDEAN = False
+
+print("n={}\td={}\tk={}\tbatch_size={} ".format(n, d, k, batch_sz))
+print("Distance metric: ", "Eucledian" if EUCLIDEAN else "Manhattan")
+
+print("\nMaking k-groups as:")
+for kk in range(k):
+    dd = (kk-1)%d
+    print("    x[{}:{}, {}] += {}".format(kk*n//k, (kk+1)*n//k, dd , 3*d*kk))
+    data[kk*n//k:(kk+1)*n//k,dd] += 3*d*kk
+
+######################### Fitting
+print("\nFitting Kmedoids.")
+final_assignments, final_medoid_ids = kmeds()
+
+print("\nFitting Kmeans from Scikit-Learn")
+fit = KMeans(n_clusters=k).fit(data)
+kmeans_assignments = fit.labels_
+kmeans = fit.cluster_centers_
+
+mismatch = np.zeros((k, k))
+for i, m in (zip(final_assignments, kmeans_assignments)):
+    mismatch[i, m] += 1
+
+np.set_printoptions(suppress=True)
+print("\nKMedoids:")
+print(data[final_medoid_ids, ])
+print("K-Medoids class sizes:")
+print(mismatch.sum(axis=-1))
+print("\nKMeans:")
+print(kmeans)
+print("K-Means class sizes:")
+print(mismatch.sum(axis=0))
+print("\nMismatch between assignment to Kmeans and Kmedoids:")
+print(mismatch)
+print("Should ideally be {} * a permutation matrix.".format(n//k))

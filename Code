@@ -310,7 +310,7 @@ plt.scatter(data2['Timestamp'],data2['Air.Temperature.In'], s=10, cmap='viridis'
 plt.scatter(data2['Timestamp'],data2['Water.Out-Temperature.Value'], s=10, cmap='viridis')
 
 
-######################### K-Medoids
+######################### K-Medoids --> From GitHub Sources
 
 def assign_nearest(ids_of_mediods):
     dists = dist(data[:,None,:], data[None,ids_of_mediods,:])
